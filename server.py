@@ -51,7 +51,7 @@ def handle_client(client_conn, client_addr):
                 result = mycursor.fetchall()
 
                 if result.__len__() == 0:   #Nothing Found..
-                    response =  f"xxxx,{key},xxxx"                           
+                    response =  f"NOT FOUND,{key},xxxx"                           
                     client_conn.send(response.encode(FORMAT))
                 else:                       #Data Found..
                     response_key = result[0][0]

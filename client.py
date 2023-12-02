@@ -16,18 +16,18 @@ try:
     while True:
         print("Select the Type of Request.")
         print("1.GET 2.POST 3.PUT 4.DELETE 5.Exit")
-        choice = input(int("Enter your choice: "))
+        choice = int(input("Enter your choice: "))
 
         if choice == 1:
             #implement GET Request.
-            key = input(int("Enter the key to be RETRIEVED: "))
+            key = int(input("Enter the key to be RETRIEVED: "))
             data_to_send = f"{choice},{key}"   
 
             client.send(data_to_send.encode(FORMAT))
 
             response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
                                                             # "OK",{key},{value} if present, else returns "NOT FOUND",{key},{"NULL"} 
-            msg,key,value = map(int, response.split(','))
+            msg,key,value = response.split(',')
 
             if msg == "OK":                                 #Key found in DB.
                 print(f"key  {key} : value {value}  pair")
@@ -36,7 +36,7 @@ try:
 
         elif choice == 2:
             #implement POST Request.
-            key = input(int("Enter the key: "))
+            key = int(input("Enter the key: "))
             value = input("Enter the value: ")
             data_to_send = f"{choice},{key},{value}"
 
@@ -50,7 +50,7 @@ try:
 
         elif choice == 3:
             #implement PUT Request.
-            key = input(int("Enter the key to be UPDATED: "))
+            key = int(input("Enter the key to be UPDATED: "))
             data_to_send = f"{choice},{key}"  
 
             client.send(data_to_send.encode(FORMAT))  
@@ -76,7 +76,7 @@ try:
 
         elif choice == 4:
             #implement DELETE Request.
-            key = input(int("Enter the key to be DELETED: "))
+            key = int(input("Enter the key to be DELETED: "))
             data_to_send = f"{choice},{key}"  
             client.send(data_to_send.encode(FORMAT)) 
 
