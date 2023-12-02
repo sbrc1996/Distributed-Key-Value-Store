@@ -21,7 +21,8 @@ try:
         if choice == 1:
             #implement GET Request.
             key = input(int("Enter the key to be RETRIEVED: "))
-            data_to_send = f"{choice},{key}"         
+            data_to_send = f"{choice},{key}"   
+
             client.send(data_to_send.encode(FORMAT))
 
             response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
@@ -45,7 +46,7 @@ try:
             if response == "OK":
                 print(f"{key}:{value} successfully entered in DB.")
             else:
-                print(f"{key}:{value} not entered in DB error encountered.")
+                print(f"{key}:{value} not entered in DB error encountered as it already exists..")
 
         elif choice == 3:
             #implement PUT Request.
@@ -54,10 +55,9 @@ try:
 
             client.send(data_to_send.encode(FORMAT))  
 
-            response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
-                                                            # "OK",{key},{value} if present, else returns "NOT FOUND",{key},{"NULL"} 
-            msg,key,value = map(int, response.split(','))
-
+            msg = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
+                                                            # "OK"  if present, else returns "NOT FOUND",{key},{"NULL"} 
+            
             if msg == "OK":                                 #Key found in DB.
                 print(f"key  {key} : value {value}  pair")
                 newValue = input("Enter the updated value: ")
@@ -83,9 +83,9 @@ try:
             response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
                                                             # "OK" if present, else returns "NOT FOUND" 
             
-            if response == "OK":                                 #Key found in DB.
-                print(f"key  {key} : value {value}  pair found and successfully Deleted..")                
-            else:                                                #Key not found in DB.
+            if response == "OK":                            #Key found in DB.
+                print(f"key  {key} was found and successfully Deleted..")                
+            else:                                           #Key not found in DB.
                 print(f"key  {key} not found..")
 
         else:
