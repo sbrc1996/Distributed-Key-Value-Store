@@ -37,7 +37,7 @@ def handle_client(client_conn, client_addr):
         while True:
             msg = client_conn.recv(1024).decode(FORMAT)         #msg will store the data send by the client in a f-string format.
 
-            print(f"Message from client is {msg}.")
+            print(f"Message from client {client_addr} is {msg}.")
             
             parts = msg.split(',')
 
@@ -67,8 +67,12 @@ def handle_client(client_conn, client_addr):
                 result = mycursor.fetchall()
 
                 if result.__len__() == 0:                   #Nothing Found..Then push the value into the Tables..
-                    mycursor.execute(f"INSERT INTO KeyValue (`Key`, value) VALUES ({key}, {value})")
+                    # mycursor.execute(f"INSERT INTO KeyValue (`Key`, value) VALUES ({key}, {value})")
+                    insert_query = "INSERT INTO KeyValue (`Key`, value) VALUES (%s, %s)"
+                    values = (key, value)
+                    mycursor.execute(insert_query, values)
                     db.commit()
+
                     response = "OK"
                     client_conn.send(response.encode(FORMAT))
                 else:
@@ -76,28 +80,29 @@ def handle_client(client_conn, client_addr):
                     client_conn.send(response.encode(FORMAT))
             
             elif choice == 3:
-                #It is a PUT Request..
+                # It is a PUT Request
                 #1. First do a lookup and check if the key already present or not?
                 mycursor.execute(f"select * from KeyValue where `key` = {key}")
                 result = mycursor.fetchall()
 
-                if result.__len__() == 0:               #Nothing Found..Throw error..
+                if result.__len__() == 0:
                     response = "NOT FOUND"
-                    client_conn.send(response.encode(FORMAT))
+                    client_conn.send(response.encode(FORMAT))               
                 else:
                     response = "OK"
                     client_conn.send(response.encode(FORMAT))
-                
-                    request = client_conn.recv(1024).decode(FORMAT)         #Get the updated information to change in the database..
-                
-                    key_to_update,new_value = map(int, request.split(','))
 
-                    mycursor.execute(f"UPDATE KeyValue SET value = '{new_value}' WHERE `key` = {key_to_update}")
+                    request = client_conn.recv(1024).decode(FORMAT)     #Get the updated information to change in the database..
+                    key_to_update, new_value = request.split(',')
+                    key_to_update_as_int = int(key_to_update)
+
+                    update_query = "UPDATE KeyValue SET value = %s WHERE `key` = %s"
+                    values = (new_value, key_to_update_as_int)
+                    mycursor.execute(update_query, values)
                     db.commit()
 
                     response = "OK"
-                    client_conn.send(response.encode(FORMAT))
-            
+                    client_conn.send(response.encode(FORMAT))            
 
             elif choice == 4:
                 #It is a DELETE Request..
@@ -109,7 +114,9 @@ def handle_client(client_conn, client_addr):
                     response = "NOT FOUND"
                     client_conn.send(response.encode(FORMAT))
                 else:
-                    mycursor.execute(f"DELETE FROM KeyValue WHERE `key` = {key}")
+                    # mycursor.execute(f"DELETE FROM KeyValue WHERE `key` = {key}")
+                    delete_query = "DELETE FROM KeyValue WHERE `key` = %s"
+                    mycursor.execute(delete_query, (key,))
                     db.commit()
 
                     response = "OK"
@@ -117,13 +124,14 @@ def handle_client(client_conn, client_addr):
             
             else:
                #A wrong Request..Code would never reach here...
+               print(f"Terminating {client_addr} connection...")
                break 
             
     except Exception as e:
         print(f"Error {e} has occured.")
 
     finally:        
-        print("Connection terminated by the client.")
+        print("Terminated..")
         client_conn.close()
 
 

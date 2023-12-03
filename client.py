@@ -51,28 +51,27 @@ try:
         elif choice == 3:
             #implement PUT Request.
             key = int(input("Enter the key to be UPDATED: "))
-            data_to_send = f"{choice},{key}"  
+            data_to_send = f"{choice},{key}"
 
-            client.send(data_to_send.encode(FORMAT))  
+            client.send(data_to_send.encode(FORMAT))            
 
-            msg = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
+            msg = client.recv(1024).decode(FORMAT)          #  Server or cache returns key value from the DB in 
                                                             # "OK"  if present, else returns "NOT FOUND",{key},{"NULL"} 
-            
-            if msg == "OK":                                 #Key found in DB.
-                print(f"key  {key} : value {value}  pair")
+            if msg == "OK":
+                print(f"key {key} found in DB.")         
                 newValue = input("Enter the updated value: ")
                 data_to_send = f"{key},{newValue}"
 
-                client.send(data_to_send.encode(FORMAT)) 
+                client.send(data_to_send.encode(FORMAT))
 
-                response = client.recv(1024).decode(FORMAT)     #Server returns string "OK" or "ERROR"
-
+                response = client.recv(1024).decode(FORMAT)
                 if response == "OK":
-                    print(f"{key}:{newValue} successfully entered in DB.")
+                    print(f"{key}:{newValue} successfully updated in DB.")
                 else:
-                    print(f"{key}:{value} not entered in DB error encountered.")
-            else:                                           #Key not found in DB.
-                print(f"key  {key} not found..")
+                    print(f"Error updating {key} in DB.")
+            else:
+                print(f"key {key} not found in DB.")
+
 
         elif choice == 4:
             #implement DELETE Request.
@@ -88,8 +87,13 @@ try:
             else:                                           #Key not found in DB.
                 print(f"key  {key} not found..")
 
-        else:
+        else:   
+            #Terminate the connection..
             print("Thank you for your time..")
+            key = -1
+            data_to_send = f"{choice},{key}"
+            client.send(data_to_send.encode(FORMAT)) 
+
             break
 
 except Exception as e:
