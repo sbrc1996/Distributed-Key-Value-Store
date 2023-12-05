@@ -2,7 +2,7 @@ import socket
 
 #Server Details.
 IP = '127.0.0.1'
-LOAD_PORT = 19345
+LOAD_PORT = 19344
 FORMAT = "utf-8"
 
 
