@@ -3,8 +3,7 @@
 A Python-based CLI Program
 
 SYSTEM DIAGRAM:
-![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/7588c406-ed5b-47f9-81e2-f917508b255a)
-
+![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/b3c4e591-a28a-47f8-9113-9f344c9f34b1)
 
 **DESCRIPTION**
 Here we have n clients connecting to the Service Discovery that assigns a correct load balancer to the client. The load balancers are decided on the basis of the value of the key entered by the user. 
