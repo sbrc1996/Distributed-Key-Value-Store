@@ -2,15 +2,31 @@ import socket
 
 #Server Details.
 IP = '127.0.0.1'
-LOAD_PORT = 19344
+LOAD_PORT1 = 19344
+LOAD_PORT2 = 19354
+LOAD_PORT3 = 19364
 FORMAT = "utf-8"
 
 
 
 #Creating the Client Socket & Connecting to the Server.
 
-client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)    		
-client.connect((IP,LOAD_PORT)) 
+client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)    	
+
+
+
+# client.connect((IP,LOAD_PORT)) 
+
+
+def service_discovery(key):
+    if key >= 0 and key <= 100:
+        return LOAD_PORT1
+    elif key > 100 and key <= 300:
+        return LOAD_PORT2
+    elif key > 300 and key <= 500:
+        return LOAD_PORT3
+    else:
+        return -1    #Default Port Number..
 
 try:
     while True:
@@ -21,6 +37,11 @@ try:
         if choice == 1:
             #implement GET Request.
             key = int(input("Enter the key to be RETRIEVED: "))
+
+            # Get the load balancer to be connected based on the Key value entered..
+            load_port_number = service_discovery(key)
+            client.connect((IP,load_port_number)) 
+
             data_to_send = f"{choice},{key}"   
 
             client.send(data_to_send.encode(FORMAT))
@@ -38,6 +59,11 @@ try:
             #implement POST Request.
             key = int(input("Enter the key: "))
             value = input("Enter the value: ")
+
+            # Get the load balancer to be connected based on the Key value entered..
+            load_port_number = service_discovery(key)
+            client.connect((IP,load_port_number))
+
             data_to_send = f"{choice},{key},{value}"
 
             client.send(data_to_send.encode(FORMAT))        
@@ -51,6 +77,11 @@ try:
         elif choice == 3:
             #implement PUT Request.
             key = int(input("Enter the key to be UPDATED: "))
+
+            # Get the load balancer to be connected based on the Key value entered..
+            load_port_number = service_discovery(key)
+            client.connect((IP,load_port_number))
+
             data_to_send = f"{choice},{key}"
 
             client.send(data_to_send.encode(FORMAT))            
@@ -76,6 +107,11 @@ try:
         elif choice == 4:
             #implement DELETE Request.
             key = int(input("Enter the key to be DELETED: "))
+
+            # Get the load balancer to be connected based on the Key value entered..
+            load_port_number = service_discovery(key)
+            client.connect((IP,load_port_number))
+
             data_to_send = f"{choice},{key}"  
             client.send(data_to_send.encode(FORMAT)) 
 

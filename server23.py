@@ -1,6 +1,7 @@
 import mysql.connector
 import socket
 import threading
+import redis
 
 # https://stackoverflow.com/questions/50557234/authentication-plugin-caching-sha2-password-is-not-supported
 
@@ -18,8 +19,11 @@ db = mysql.connector.connect(
 mycursor = db.cursor()
 # mycursor.execute("CREATE DATABASE db1")
 
+#Create an Instance of redis..
+r = redis.Redis(host='127.0.0.1', port=6379)
+
 IP = '127.0.0.1'
-PORT = 19345
+PORT = 19357
 FORMAT = "utf-8"
 
 server_address = (IP,PORT)
@@ -47,52 +51,80 @@ def handle_client(client_conn, client_addr):
 
             if choice == 1:
                 #It is a GET Request..
-                mycursor.execute(f"select * from KeyValue where `key` = {key}")
-                result = mycursor.fetchall()
+                #   First check the redis if it present or not..
+                #   If present then return it, else check in the Database..
 
-                if result.__len__() == 0:   #Nothing Found..
-                    response =  f"NOT FOUND,{key},xxxx"                           
-                    client_conn.send(response.encode(FORMAT))
-                else:                       #Data Found..
-                    response_key = result[0][0]
-                    response_value = result[0][1]
+                #1. If the Data is already in the cache, then send it from there..
+                if r.exists(key):
+
+                    response_key = key
+                    response_value = r.get(key)
                     response = f"OK,{response_key},{response_value}"
-
                     client_conn.send(response.encode(FORMAT))
+
+                #2. If not in cache..
+                else:   
+                    mycursor.execute(f"select * from KeyValue where `key` = {key}")
+                    result = mycursor.fetchall()
+
+                    if result.__len__() == 0:   #Nothing Found..in database.. then the value is totally absent..
+                        response =  f"NOT FOUND,{key},xxxx"                           
+                        client_conn.send(response.encode(FORMAT))
+                    else:                       #Data Found..in database but not in cache..then update the cache..
+                        response_key = result[0][0]
+                        response_value = result[0][1]
+                        response = f"OK,{response_key},{response_value}"
+                        r.set(response_key,response_value)      #
+
+                        client_conn.send(response.encode(FORMAT))
 
             elif choice == 2:
                 #It is a POST Request..
-                #1. First do a lookup and check if the key already present or not?
-                mycursor.execute(f"select * from KeyValue where `key` = {key}")
-                result = mycursor.fetchall()
 
-                if result.__len__() == 0:                   #Nothing Found..Then push the value into the Tables..
-                    # mycursor.execute(f"INSERT INTO KeyValue (`Key`, value) VALUES ({key}, {value})")
-                    insert_query = "INSERT INTO KeyValue (`Key`, value) VALUES (%s, %s)"
-                    values = (key, value)
-                    mycursor.execute(insert_query, values)
-                    db.commit()
-
-                    response = "OK"
-                    client_conn.send(response.encode(FORMAT))
-                else:
+                #Data found in the cache..
+                if r.exists(key):
                     response = "NA"
                     client_conn.send(response.encode(FORMAT))
+
+                #Data Not found in cache..
+                else:
+                    #1. Check in the database if it exists or not?                
+                    mycursor.execute(f"select * from KeyValue where `key` = {key}")
+                    result = mycursor.fetchall()
+
+                    if result.__len__() == 0:                   #Nothing Found in DB & Cache..Then push the value into the Table..
+                        
+                        insert_query = "INSERT INTO KeyValue (`Key`, value) VALUES (%s, %s)"
+                        values = (key, value)
+                        mycursor.execute(insert_query, values)
+                        db.commit()
+
+                        r.set(key,value)                        #Update the cache along with the database..
+
+                        response = "OK"
+                        client_conn.send(response.encode(FORMAT))
+                    else:                                       #Data found in the DB table but not in Cache..
+                        response = "NA"
+                        client_conn.send(response.encode(FORMAT))
             
             elif choice == 3:
                 # It is a PUT Request
-                #1. First do a lookup and check if the key already present or not?
+
+                # Find the Key in the database, if it is present in the DB then update it in the Cache and the DB..
+
                 mycursor.execute(f"select * from KeyValue where `key` = {key}")
                 result = mycursor.fetchall()
 
-                if result.__len__() == 0:
+                if result.__len__() == 0:       #Not found in the Database..
                     response = "NOT FOUND"
                     client_conn.send(response.encode(FORMAT))               
-                else:
+                else:                           #Data present in the Database..
                     response = "OK"
                     client_conn.send(response.encode(FORMAT))
 
-                    request = client_conn.recv(1024).decode(FORMAT)     #Get the updated information to change in the database..
+                    #Get the updated information to change in the database..
+
+                    request = client_conn.recv(1024).decode(FORMAT)     
                     key_to_update, new_value = request.split(',')
                     key_to_update_as_int = int(key_to_update)
 
@@ -101,23 +133,31 @@ def handle_client(client_conn, client_addr):
                     mycursor.execute(update_query, values)
                     db.commit()
 
+                    #Update in the cache..
+                    r.set(key_to_update_as_int,new_value)
+
                     response = "OK"
                     client_conn.send(response.encode(FORMAT))            
 
             elif choice == 4:
                 #It is a DELETE Request..
-                #1. First do a lookup and check if the key already present or not?
+
+                #1. If data found in cache.. then remove it from the cache..
+                if r.exists(key):
+                    r.delete(key)       #Invalidate it in cache.     
+
+                #2. Check if it is present in the database or not?
                 mycursor.execute(f"select * from KeyValue where `key` = {key}")
                 result = mycursor.fetchall()
 
-                if result.__len__() == 0:               #Nothing Found..Throw error..
+                if result.__len__() == 0:               #Nothing Found in  DB..Throw error..
                     response = "NOT FOUND"
                     client_conn.send(response.encode(FORMAT))
-                else:
-                    # mycursor.execute(f"DELETE FROM KeyValue WHERE `key` = {key}")
+                else:                                   #Data found in DB..
+
                     delete_query = "DELETE FROM KeyValue WHERE `key` = %s"
                     mycursor.execute(delete_query, (key,))
-                    db.commit()
+                    db.commit()                    
 
                     response = "OK"
                     client_conn.send(response.encode(FORMAT))
