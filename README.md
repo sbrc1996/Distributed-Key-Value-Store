@@ -2,10 +2,12 @@
 
 A Python-based CLI Program
 
-SYSTEM DIAGRAM:
+**SYSTEM DIAGRAM**
+
 ![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/b3c4e591-a28a-47f8-9113-9f344c9f34b1)
 
 **DESCRIPTION**
+
 Here we have n clients connecting to the Service Discovery that assigns a correct load balancer to the client. The load balancers are decided on the basis of the value of the key entered by the user. 
 Load Balancer 1 handles the key from 0 to 100 while Load Balancer 2 handles from 101 to 300 and Load Balancer 3 handles 301 to 500. 
 Each of these load balancers is connected to an array of servers that handle the business logic.
