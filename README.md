@@ -32,6 +32,9 @@ First start the Redis server using the command:
         `python3 loadbalancer1.py` or `python3 server12.py`
     3. Enter values through the clients and interact with the program.
 
+**EXECUTION SCREENSHOT**
+![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/a348cc03-2e87-4195-9d37-cb5aa79487de)
+
 
 **FUTURE SCOPE:**
 Implement RATE LIMITING to provide a check on the number of requests made per client.
