@@ -34,6 +34,11 @@ First start the Redis server using the command:
 
 **EXECUTION SCREENSHOT**
 ![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/a348cc03-2e87-4195-9d37-cb5aa79487de)
+**DATABASE SCREENSHOT**
+DB1: ![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/d50c346b-e8e6-4389-9986-7276c4e6214d)
+DB2: ![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/11c185f6-d444-4b87-bdca-2ab0cb4ae616)
+DB3: ![image](https://github.com/sbrc1996/Distributed-Key-Value-Store/assets/36306295/2faef879-0152-4f9a-9e39-4c0ffbc4ba85)
+
 
 
 **FUTURE SCOPE:**
