@@ -11,7 +11,7 @@ FORMAT = "utf-8"
 
 #Creating the Client Socket & Connecting to the Server.
 
-client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)    	
+# client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)    	
 
 
 
@@ -30,6 +30,11 @@ def service_discovery(key):
 
 try:
     while True:
+
+        #Creating the Client Socket & Connecting to the Server.
+
+        client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)   
+
         print("Select the Type of Request.")
         print("1.GET 2.POST 3.PUT 4.DELETE 5.Exit")
         choice = int(input("Enter your choice: "))
@@ -54,6 +59,7 @@ try:
                 print(f"key  {key} : value {value}  pair")
             else:                                           #Key not found in DB.
                 print(f"key  {key} not found..")
+            client.close()                                  # Close the connection after each request.
 
         elif choice == 2:
             #implement POST Request.
@@ -73,6 +79,7 @@ try:
                 print(f"{key}:{value} successfully entered in DB.")
             else:
                 print(f"{key}:{value} not entered in DB error encountered as it already exists..")
+            client.close()                                  # Close the connection after each request.
 
         elif choice == 3:
             #implement PUT Request.
@@ -102,6 +109,7 @@ try:
                     print(f"Error updating {key} in DB.")
             else:
                 print(f"key {key} not found in DB.")
+            client.close()                                  # Close the connection after each request.
 
 
         elif choice == 4:
@@ -122,6 +130,7 @@ try:
                 print(f"key  {key} was found and successfully Deleted..")                
             else:                                           #Key not found in DB.
                 print(f"key  {key} not found..")
+            client.close()                                  # Close the connection after each request.
 
         else:   
             #Terminate the connection..
