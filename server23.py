@@ -13,7 +13,7 @@ db = mysql.connector.connect(
     host = '127.0.0.1',
     port='3306',
     auth_plugin='mysql_native_password', 
-    database='db1'
+    database='db2'
 )
 
 mycursor = db.cursor()
