@@ -9,12 +9,7 @@ FORMAT = "utf-8"
 
 
 
-#Creating the Client Socket & Connecting to the Server.
-
 # client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)    	
-
-
-
 # client.connect((IP,LOAD_PORT)) 
 
 
@@ -26,13 +21,12 @@ def service_discovery(key):
     elif key > 300 and key <= 500:
         return LOAD_PORT3
     else:
-        return -1    #Default Port Number..
+        return -1    #Error in Port Number..
 
 try:
     while True:
 
         #Creating the Client Socket & Connecting to the Server.
-
         client = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)   
 
         print("Select the Type of Request.")
@@ -45,21 +39,28 @@ try:
 
             # Get the load balancer to be connected based on the Key value entered..
             load_port_number = service_discovery(key)
-            client.connect((IP,load_port_number)) 
 
-            data_to_send = f"{choice},{key}"   
+            if load_port_number != -1:
 
-            client.send(data_to_send.encode(FORMAT))
+                client.connect((IP,load_port_number)) 
 
-            response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
-                                                            # "OK",{key},{value} if present, else returns "NOT FOUND",{key},{"NULL"} 
-            msg,key,value = response.split(',')
+                data_to_send = f"{choice},{key}"   
 
-            if msg == "OK":                                 #Key found in DB.
-                print(f"key  {key} : value {value}  pair")
-            else:                                           #Key not found in DB.
-                print(f"key  {key} not found..")
-            client.close()                                  # Close the connection after each request.
+                client.send(data_to_send.encode(FORMAT))
+
+                response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
+                                                                # "OK",{key},{value} if present, else returns "NOT FOUND",{key},{"NULL"} 
+                msg,key,value = response.split(',')
+
+                if msg == "OK":                                 #Key found in DB.
+                    print(f"key  {key} : value {value}  pair")
+                else:                                           #Key not found in DB.
+                    print(f"key  {key} not found..")
+                client.close()                                  # Close the connection after each request.
+            
+            else:
+                client.close()
+                print("Wrong Key entered. TRY AGAIN!!")
 
         elif choice == 2:
             #implement POST Request.
@@ -68,18 +69,27 @@ try:
 
             # Get the load balancer to be connected based on the Key value entered..
             load_port_number = service_discovery(key)
-            client.connect((IP,load_port_number))
 
-            data_to_send = f"{choice},{key},{value}"
+            if load_port_number != -1:
 
-            client.send(data_to_send.encode(FORMAT))        
+                client.connect((IP,load_port_number))
 
-            response = client.recv(1024).decode(FORMAT)     #Server returns string "OK" or "ERROR"
-            if response == "OK":
-                print(f"{key}:{value} successfully entered in DB.")
+                data_to_send = f"{choice},{key},{value}"
+
+                client.send(data_to_send.encode(FORMAT))        
+
+                response = client.recv(1024).decode(FORMAT)     #Server returns string "OK" or "ERROR"
+                if response == "OK":
+                    print(f"{key}:{value} successfully entered in DB.")
+                else:
+                    print(f"{key}:{value} not entered in DB error encountered as it already exists..")
+                client.close()                                  # Close the connection after each request.
             else:
-                print(f"{key}:{value} not entered in DB error encountered as it already exists..")
-            client.close()                                  # Close the connection after each request.
+
+                client.close()
+                print("Wrong Key entered. TRY AGAIN!!")
+
+
 
         elif choice == 3:
             #implement PUT Request.
@@ -87,29 +97,37 @@ try:
 
             # Get the load balancer to be connected based on the Key value entered..
             load_port_number = service_discovery(key)
-            client.connect((IP,load_port_number))
 
-            data_to_send = f"{choice},{key}"
+            if load_port_number != -1:
 
-            client.send(data_to_send.encode(FORMAT))            
+                client.connect((IP,load_port_number))
 
-            msg = client.recv(1024).decode(FORMAT)          #  Server or cache returns key value from the DB in 
-                                                            # "OK"  if present, else returns "NOT FOUND",{key},{"NULL"} 
-            if msg == "OK":
-                print(f"key {key} found in DB.")         
-                newValue = input("Enter the updated value: ")
-                data_to_send = f"{key},{newValue}"
+                data_to_send = f"{choice},{key}"
 
-                client.send(data_to_send.encode(FORMAT))
+                client.send(data_to_send.encode(FORMAT))            
 
-                response = client.recv(1024).decode(FORMAT)
-                if response == "OK":
-                    print(f"{key}:{newValue} successfully updated in DB.")
+                msg = client.recv(1024).decode(FORMAT)          #  Server or cache returns key value from the DB in 
+                                                                # "OK"  if present, else returns "NOT FOUND",{key},{"NULL"} 
+                if msg == "OK":
+                    print(f"key {key} found in DB.")         
+                    newValue = input("Enter the updated value: ")
+                    data_to_send = f"{key},{newValue}"
+
+                    client.send(data_to_send.encode(FORMAT))
+
+                    response = client.recv(1024).decode(FORMAT)
+                    if response == "OK":
+                        print(f"{key}:{newValue} successfully updated in DB.")
+                    else:
+                        print(f"Error updating {key} in DB.")
                 else:
-                    print(f"Error updating {key} in DB.")
+                    print(f"key {key} not found in DB.")
+                client.close()                                  # Close the connection after each request.
             else:
-                print(f"key {key} not found in DB.")
-            client.close()                                  # Close the connection after each request.
+
+                client.close()
+                print("Wrong Key entered. TRY AGAIN!!")
+
 
 
         elif choice == 4:
@@ -118,19 +136,26 @@ try:
 
             # Get the load balancer to be connected based on the Key value entered..
             load_port_number = service_discovery(key)
-            client.connect((IP,load_port_number))
 
-            data_to_send = f"{choice},{key}"  
-            client.send(data_to_send.encode(FORMAT)) 
+            if load_port_number != -1:
 
-            response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
-                                                            # "OK" if present, else returns "NOT FOUND" 
-            
-            if response == "OK":                            #Key found in DB.
-                print(f"key  {key} was found and successfully Deleted..")                
-            else:                                           #Key not found in DB.
-                print(f"key  {key} not found..")
-            client.close()                                  # Close the connection after each request.
+                client.connect((IP,load_port_number))
+
+                data_to_send = f"{choice},{key}"  
+                client.send(data_to_send.encode(FORMAT)) 
+
+                response = client.recv(1024).decode(FORMAT)     #  Server or cache returns key value from the DB in 
+                                                                # "OK" if present, else returns "NOT FOUND" 
+                
+                if response == "OK":                            #Key found in DB.
+                    print(f"key  {key} was found and successfully Deleted..")                
+                else:                                           #Key not found in DB.
+                    print(f"key  {key} not found..")
+                client.close()                                  # Close the connection after each request.
+            else:
+
+                client.close()
+                print("Wrong Key entered. TRY AGAIN!!")
 
         else:   
             #Terminate the connection..
@@ -138,7 +163,6 @@ try:
             key = -1
             data_to_send = f"{choice},{key}"
             client.send(data_to_send.encode(FORMAT)) 
-
             break
 
 except Exception as e:
@@ -146,4 +170,4 @@ except Exception as e:
 
 finally:
     print("Connection terminated by the client.")
-    client.close()
+    client.close()      #Closing the connection for the client.
